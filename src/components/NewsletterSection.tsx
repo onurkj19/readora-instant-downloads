@@ -3,12 +3,14 @@ import { Input } from "@/components/ui/input";
 import { Mail, Gift } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { subscribeToNewsletter } from "@/lib/api";
 
 const NewsletterSection = () => {
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
       toast({
@@ -19,12 +21,25 @@ const NewsletterSection = () => {
       return;
     }
 
-    // Here you would typically integrate with your email service
-    toast({
-      title: "Success!",
-      description: "Thank you for subscribing! Check your email for your welcome gift.",
-    });
-    setEmail("");
+    try {
+      setIsLoading(true);
+      const result = await subscribeToNewsletter(email);
+      
+      toast({
+        title: "Success!",
+        description: result.message || "Thank you for subscribing! Check your email for your welcome gift.",
+      });
+      
+      setEmail("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to subscribe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,8 +89,9 @@ const NewsletterSection = () => {
                 type="submit" 
                 variant="secondary" 
                 className="sm:w-auto w-full font-semibold"
+                disabled={isLoading}
               >
-                Subscribe
+                {isLoading ? "Subscribing..." : "Subscribe"}
               </Button>
             </div>
           </form>

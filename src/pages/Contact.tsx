@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { submitContactForm } from "@/lib/api";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -13,10 +14,11 @@ const Contact = () => {
     subject: "",
     message: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -29,14 +31,26 @@ const Contact = () => {
       return;
     }
 
-    // Here you would typically send the form data to your backend
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We'll get back to you within 24 hours.",
-    });
-    
-    // Reset form
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    try {
+      setIsLoading(true);
+      const result = await submitContactForm(formData);
+      
+      toast({
+        title: "Message Sent!",
+        description: result.message || "Thank you for contacting us. We'll get back to you within 24 hours.",
+      });
+      
+      // Reset form
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -194,8 +208,8 @@ const Contact = () => {
                     />
                   </div>
 
-                  <Button type="submit" variant="default" size="lg" className="w-full">
-                    Send Message
+                  <Button type="submit" variant="default" size="lg" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </div>
