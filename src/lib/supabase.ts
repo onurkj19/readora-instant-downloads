@@ -41,12 +41,12 @@ const mockSupabase: SupabaseClient = {
       switch (name) {
         case 'create-checkout':
           return { 
-            data: { url: 'https://checkout.stripe.com/pay/mock-session' }, 
+            data: { url: '/success?session_id=cs_test_mock' }, 
             error: null 
           };
         case 'verify-payment':
           return { 
-            data: { success: true, order: {}, downloadToken: 'mock-token' }, 
+            data: { success: true, order: { amount: 49, download_token: 'mock-token', products: { title: 'Mock Product', file_type: 'PDF' } } }, 
             error: null 
           };
         case 'download-product':
